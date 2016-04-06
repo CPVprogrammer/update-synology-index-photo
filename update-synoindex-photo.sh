@@ -27,6 +27,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 # v1.00 first release
+# v1.01 corrected a bug with postgresql path for DSM 6.0
 
 
 #---------------------------------------------
@@ -44,6 +45,7 @@ set_environment(){
 	SCRIPT_NAME=${0##*/}
 	SCRIPT_NAME=${SCRIPT_NAME%.*}
 	CONFIG_FILE=$SCRIPT_NAME"-conf.txt"
+	PSQL_PATH=`which psql`
 
 	FICH_CONF="$CONFIG_DIR/$CONFIG_FILE"
 
@@ -123,7 +125,7 @@ search_directory_DB(){
 	CREATE_DIR=0
 	
 	while : ; do
-		TOTAL=`/usr/syno/pgsql/bin/psql mediaserver postgres -tA -c "select count(1) from directory where lower(path) like '%$PATH_MEDIA_SQL%'"`
+		TOTAL=`$PSQL_PATH mediaserver postgres -tA -c "select count(1) from directory where lower(path) like '%$PATH_MEDIA_SQL%'"`
 
 		if [ "$TOTAL" = 0 ]; then
 			if [ "$FIRST" = 1 ]; then
@@ -153,7 +155,7 @@ search_file_DB(){
     #replace "'" with "\'"
     FICH_MEDIA_SQL=${FICH_MEDIA_DB//"'"/"\'"}
 
-    TOTAL=`/usr/syno/pgsql/bin/psql mediaserver postgres -tA -c "select count(1) from photo where lower(path) like '%$FICH_MEDIA_SQL%'"`
+    TOTAL=`$PSQL_PATH mediaserver postgres -tA -c "select count(1) from photo where lower(path) like '%$FICH_MEDIA_SQL%'"`
 
     return "$TOTAL"
 }
@@ -307,7 +309,8 @@ treatment(){
 				fi
 			fi
 
-			log_this "program executed at: " `date +"%Y-%m-%d %H:%M:%S`
+			NOW=$(date +"%Y-%m-%d %H:%M:%S")
+			log_this "program executed at: " $NOW
 
             READ_LOG=1
             continue
