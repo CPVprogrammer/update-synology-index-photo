@@ -30,6 +30,7 @@
 # v1.01 corrected a bug with postgresql path for DSM 6.0
 # v1.02 corrected a bug with paths with spaces in config file
 # v1.03 corrected a bug with find parameters
+# v1.04 corrected a bug with log paths with spaces in config file
 
 
 #---------------------------------------------
@@ -59,7 +60,7 @@ $ALL_EXT
 none
 #user: none, root, transmission, ftp, etc.
 none
-#directory for log/filename --> none or path or path/filename
+#directory for log/filename --> none, or path, or path/filename. for paths only must end with /
 none
 #directories to treat --> 0 recursive, 1 no recursive
 1 /volume1
@@ -83,7 +84,7 @@ log_this(){
     if [ "$LOG_FILE" == "none" ]; then
         echo $*
     else
-        echo $* | tee -a $LOG_FILE
+        echo $* | tee -a "$LOG_FILE"
     fi
 }
 
@@ -288,9 +289,6 @@ treatment(){
                 LOG_FILE="none"
 
             else
-                #delete last / if exist
-                #LOG_FILE="${LOG_FILE%/}"
-
                 #get directory name
                 DIRECTORY="${LINE%/*}"
 
@@ -312,7 +310,9 @@ treatment(){
                             echo "This is the logfile for the script: $SCRIPT_NAME" > $LOG_FILE
                         fi
                     fi
-
+                else
+                    echo "The log directory: \"$DIRECTORY\" doesn't exist"
+                    LOG_FILE="none"
                 fi
             fi
 
